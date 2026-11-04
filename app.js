@@ -17,6 +17,8 @@
       checks: [],
       complaints: {},
       draft: null,
+      user: null,
+      reg: {},
       bazarLog: [
         { time: '9:02', what: 'iPhone · IMEI 35•••921', res: 'čisté' },
         { time: '8:47', what: 'Zlatý řetízek (foto)', res: 'čisté' },
@@ -125,6 +127,8 @@
   }
   function getRecord(id) { return allRecords().find(function (r) { return r.id === id; }); }
   function isMine(r) { return !!(r && r.mine); }
+  function userReady() { var u = store.user; return !!(u && u.verified && u.profile && u.profile.phone && u.terms); }
+  var METHOD = { bankid: 'Bankovní identita', nia: 'Identita občana', doklad: 'Doklad a selfie' };
 
   var toastTimer;
   function toast(msg) {
@@ -292,8 +296,10 @@
     // aktivní položky navigace
     var navKey = out.nav || key;
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('active', a.dataset.nav === navKey); });
-    var tabKey = out.tab || ({ '': 'home', hledat: 'home', zaznam: 'home', overit: 'overit', vypis: 'overit', nahlasit: 'nahlasit', zpravy: 'zpravy', ucet: 'ucet', oznameni: 'ucet' }[key] || '');
+    var tabKey = out.tab || ({ '': 'home', hledat: 'home', zaznam: 'home', overit: 'overit', vypis: 'overit', nahlasit: 'nahlasit', zpravy: 'zpravy', ucet: 'ucet', oznameni: 'ucet', registrace: 'ucet' }[key] || '');
     document.querySelectorAll('[data-tab]').forEach(function (a) { a.classList.toggle('active', a.dataset.tab === tabKey); });
+    var na = document.getElementById('nav-account');
+    if (na) na.textContent = store.user && store.user.verified ? 'Účet' : 'Přihlásit';
     var unread = store.messages.some(function (m) { return m.unread; });
     document.getElementById('msg-dot').hidden = !unread;
 
@@ -485,7 +491,8 @@
       '<div class="side-col stack gap-24">' +
       '<div class="stack gap-12">' + statusHtml(r, r.police ? 'nahlášeno Policii ČR' : '') +
       '<h1 class="h-m">' + esc(r.title) + '</h1>' +
-      (r.desc ? '<p style="margin:0;color:var(--ink-2)">' + esc(r.desc) + '</p>' : '') + '</div>' +
+      (r.desc ? '<p style="margin:0;color:var(--ink-2)">' + esc(r.desc) + '</p>' : '') +
+      '<span class="row gap-8 xs" style="color:var(--found)">' + ic('shield', 16, 1.8) + (r.status === 'found' ? 'Nález vložil ověřený uživatel' : 'Nahlásil ověřený uživatel') + '</span></div>' +
       '<dl class="dl">' + facts.map(function (f) { return '<div><dt>' + f[0] + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('') + '</dl>' +
       '<div class="stack gap-12">' + actions + '</div>' +
       (!mine && r.status !== 'found' ? '<div class="note">Nabízí vám tuto věc někdo ke koupi? Nekupujte ji a ozvěte se majiteli nebo policii.</div>' : '') +
@@ -557,6 +564,7 @@
 
   VIEWS.nahlasit = function (p) {
     if (p[0] === 'hotovo') return nahlasitHotovo(p[1]);
+    if (!userReady()) { setTimeout(function () { go('#/registrace?dalsi=nahlasit'); }); return ''; }
     var step = p[0] === '3' ? 3 : p[0] === '2' ? 2 : 1;
     var d = draft();
     if (step > 1 && !d.title.trim()) { setTimeout(function () { go('#/nahlasit'); }); return ''; }
@@ -584,7 +592,7 @@
         '<span class="xs muted" id="cat-line"' + (d.cat ? '' : ' hidden') + '>' + ic('sparkle', 13, 2, ' style="vertical-align:-2px"') + ' Kategorie: <b style="font-weight:500;color:var(--ink)" id="cat-name">' + esc(catLabel(d.cat)) + '</b> · <button type="button" class="link-btn xs" style="padding:0" data-act="cat">změnit</button></span></div>' +
         '<div class="field"><label for="f-marks">Čím je to poznat? (nepovinné)</label><input id="f-marks" class="u-input" type="text" value="' + esc(d.marks) + '" placeholder="Signatura, poškození, rytina…" autocomplete="off"></div>' +
         '<div class="field" id="serial-field"' + (showSerial ? '' : ' hidden') + '><label for="f-serial">Sériové číslo nebo číslo rámu (nepovinné)</label><input id="f-serial" class="u-input mono" type="text" value="' + esc(d.serial) + '" placeholder="pomáhá bazarům věc poznat" autocomplete="off" style="font-size:18px"></div>' +
-        '<div class="row between gap-16 wrap-row"><span class="xs muted">Další: kde a kdy · kontakt</span><button type="button" class="btn lg" data-act="next" ' + (d.title.trim() ? '' : 'disabled') + '>Pokračovat</button></div>' +
+        '<div class="row between gap-16 wrap-row"><span class="xs muted">Další: kde a kdy · kontrola</span><button type="button" class="btn lg" data-act="next" ' + (d.title.trim() ? '' : 'disabled') + '>Pokračovat</button></div>' +
         '</div>';
     }
     if (step === 2) {
@@ -606,10 +614,10 @@
     if (step === 3) {
       var preview = { status: d.status, title: d.title, place: d.place, added: today(), cat: d.cat, icon: ICON_BY_CAT[d.cat], photos: d.photos };
       body =
-        '<h1 class="h-l mt-32">Kam vám dát vědět?</h1>' +
+        '<h1 class="h-l mt-32">Zkontrolujte a zveřejněte</h1>' +
         '<div class="stack gap-32 mt-32">' +
-        '<div class="field"><label for="f-email">E-mail</label><input id="f-email" class="u-input" type="email" inputmode="email" value="' + esc(d.email) + '" placeholder="vas@email.cz" autocomplete="email">' +
-        '<span class="xs muted">' + ic('lock', 13, 2, ' style="vertical-align:-2px"') + ' Nezveřejníme ho. Zprávy od nálezců vám přepošleme, odpovídáte přes ZOVE.</span></div>' +
+        '<div class="row gap-12" style="align-items:flex-start;padding:16px 18px;border-radius:16px;border:1px solid var(--line)">' + ic('shield', 20, 1.8, ' style="flex:none;color:var(--found)"') +
+        '<span class="stack gap-4"><b style="font-weight:600">Zveřejníte jako ověřený uživatel</b><span class="small muted">Vaše jméno ani kontakt se nezobrazí. Ostatní uvidí jen štítek „Ověřený uživatel“. Zprávy od nálezců vám přijdou do Zpráv.</span></span></div>' +
         '<div class="stack gap-12"><span class="xs muted" style="text-transform:uppercase;letter-spacing:.06em">Takhle to uvidí ostatní</span>' +
         '<div class="row gap-16" style="padding:12px;border-radius:18px;background:var(--soft-2)"><div style="width:88px;flex:none">' + thumb(preview, 'border-radius:12px') + '</div>' +
         '<div class="stack gap-4">' + statusHtml(preview, 'dnes') + '<b style="font-weight:500">' + esc(d.title) + '</b><span class="small muted">' + esc(d.place) + '</span></div></div></div>' +
@@ -658,13 +666,11 @@
             }, function () { toast('Polohu se nepodařilo zjistit. Napište obec ručně.'); render(); }, { timeout: 8000, maximumAge: 600000 });
           }
           if (a === 'publish') {
-            var em = app.querySelector('#f-email');
-            if (em && em.value && !em.checkValidity()) { toast('Zkontrolujte prosím e-mail.'); em.focus(); return; }
             var whenTxt = d.whenChip === 'Jindy…' && d.whenDate ? new Date(d.whenDate).toLocaleDateString('cs-CZ') : d.whenChip.toLowerCase().replace('…', '');
             var rec = {
               id: 'P-' + uid(''), status: d.status, cat: d.cat || 'ostatni', icon: ICON_BY_CAT[d.cat] || 'box',
               title: d.title.trim(), desc: d.marks.trim(), place: d.place.trim(), when: whenTxt, added: today(),
-              serial: d.serial.trim() || undefined, photos: d.photos.slice(), mine: true
+              serial: d.serial.trim() || undefined, photos: d.photos.slice(), mine: true, verified: true
             };
             store.userRecords.unshift(rec);
             if (store.watches.indexOf(rec.id) < 0) store.watches.push(rec.id);
@@ -909,7 +915,9 @@
     function docHtml() {
       var how = HOW[c.how];
       return '<p style="text-align:right;white-space:pre-line">' + esc(way.to) + '</p>' +
-        '<p style="margin-top:28px"><span class="muted">Oznamovatel:</span> <span class="hl">[jméno a příjmení]</span>, nar. <span class="hl">[datum]</span>, bytem <span class="hl">[adresa]</span></p>' +
+        '<p style="margin-top:28px"><span class="muted">Oznamovatel:</span> ' + (store.user && store.user.verified && store.user.profile.name
+          ? esc(store.user.profile.name) + ', nar. ' + esc(store.user.profile.birth) + ', bytem ' + esc(store.user.profile.address) + (store.user.profile.phone ? ', tel. ' + esc(store.user.profile.phone) : '')
+          : '<span class="hl">[jméno a příjmení]</span>, nar. <span class="hl">[datum]</span>, bytem <span class="hl">[adresa]</span>') + '</p>' +
         '<p class="title">Trestní oznámení na neznámého pachatele</p>' +
         '<p>Oznamuji, že ' + (c.found ? (/^\d/.test(c.found.trim()) ? 'dne ' : '') + esc(c.found) + ' ' : '') + 'jsem zjistil/a, že mi byl odcizen předmět: ' + esc(r.title.toLowerCase()) + (r.size ? ', rozměr ' + esc(r.size) : '') + (r.serial ? ', výrobní/sériové číslo ' + esc(r.serial) : '') + '. ' + (r.desc ? esc(r.desc) + ' ' : '') + 'Místo: ' + esc(r.place) + '. ' + esc(how) + '</p>' +
         '<p>Mám za to, že jednáním neznámého pachatele mohlo dojít ke spáchání trestného činu krádeže podle § 205 trestního zákoníku. Výši škody odhaduji na ' + (c.value ? esc(c.value) : '<span class="hl">[doplňte]</span>') + '.</p>' +
@@ -1021,6 +1029,125 @@
     return { html: html2, title: 'Zprávy' };
   };
 
+
+  /* ---------- Registrace a ověření ---------- */
+  VIEWS.registrace = function (p, q) {
+    var dalsi = q.dalsi || '';
+    var qs = dalsi ? '?dalsi=' + encodeURIComponent(dalsi) : '';
+    var step = p[0] || 'email';
+    var reg = store.reg || (store.reg = {});
+    var u = store.user;
+    if (userReady()) { setTimeout(function () { go(dalsi ? '#/' + dalsi : '#/ucet'); }); return ''; }
+    if (step === 'overeni' && !u) step = 'email';
+    if (step === 'profil' && !(u && u.verified)) step = u ? 'overeni' : 'email';
+    var n = { email: 1, kod: 2, overeni: 3, profil: 4 }[step] || 1;
+
+    var head =
+      '<div class="row between gap-12"><div class="progress" style="flex:1"><span>Krok ' + n + ' ze 4</span><span class="bar"><i style="width:' + (n * 25) + '%"></i></span></div>' +
+      '<a href="#/" class="icon-btn" aria-label="Zavřít" style="margin-left:12px">' + ic('close', 18, 2) + '</a></div>';
+    var body = '';
+
+    if (step === 'email') {
+      body =
+        (dalsi === 'nahlasit'
+          ? '<div class="row gap-12 mt-32" style="align-items:flex-start;padding:16px 18px;border-radius:16px;background:var(--soft-2)">' + ic('shield', 22, 1.8, ' style="flex:none;color:var(--found)"') +
+            '<span class="stack gap-4"><b style="font-weight:600">Vkládat předměty mohou jen ověření uživatelé</b><span class="small" style="color:var(--ink-2)">Chrání to před falešnými hlášeními a díky tomu vám věří bazary i policie. Ověření zabere asi 2 minuty a děláte ho jen jednou.</span></span></div>'
+          : '') +
+        '<h1 class="h-l mt-32">Přihlášení a registrace</h1>' +
+        '<form class="stack gap-32 mt-32" data-form="email">' +
+        '<div class="field"><label for="r-email">E-mail</label><input id="r-email" class="u-input" type="email" inputmode="email" autocomplete="email" required value="' + esc(reg.email || '') + '" placeholder="vas@email.cz"></div>' +
+        '<div class="row between gap-16 wrap-row"><span class="xs muted">Pošleme vám jednorázový kód. Žádné heslo.</span><button type="submit" class="btn lg">Poslat kód</button></div></form>';
+    }
+    if (step === 'kod') {
+      body =
+        '<h1 class="h-l mt-32">Zadejte kód</h1>' +
+        '<p class="lead" style="margin-top:12px">Poslali jsme ho na <b style="color:var(--ink);font-weight:500">' + esc(reg.email || '') + '</b>.</p>' +
+        '<form class="stack gap-32 mt-32" data-form="code">' +
+        '<div class="field"><label for="r-code">Kód z e-mailu</label><input id="r-code" class="u-input mono" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="000000" style="letter-spacing:.3em;font-size:28px">' +
+        '<span class="xs muted">V prototypu stačí jakýchkoli 6 číslic.</span></div>' +
+        '<div class="row between gap-16"><a href="#/registrace' + qs + '" class="btn ghost lg">Jiný e-mail</a><button type="submit" class="btn lg">Potvrdit</button></div></form>';
+    }
+    if (step === 'overeni') {
+      var m = reg.method || 'bankid';
+      var opts = [
+        ['bankid', 'Bankovní identita', 'Přihlásíte se do svého internetového bankovnictví · asi 1 minuta', true],
+        ['nia', 'Identita občana', 'eObčanka, NIA ID nebo Mobilní klíč eGovernmentu'],
+        ['doklad', 'Doklad a selfie', 'Vyfotíte občanku a obličej · kontrola do 24 hodin']
+      ];
+      body =
+        '<h1 class="h-l mt-32">Ověřte svou totožnost</h1>' +
+        '<p class="lead" style="margin-top:12px">Jednou a natrvalo. Ověřené údaje nám zároveň vyplní profil, takže je nemusíte psát.</p>' +
+        '<div class="stack gap-8 mt-32">' + opts.map(function (o) {
+          return '<button type="button" class="radio-row" data-method="' + o[0] + '" aria-pressed="' + (m === o[0]) + '"><span><b>' + o[1] + (o[3] ? ' <span class="xs" style="font-weight:500;color:var(--found);margin-left:6px">doporučeno</span>' : '') + '</b><span class="s">' + o[2] + '</span></span><span class="r"></span></button>';
+        }).join('') + '</div>' +
+        '<p class="xs muted mt-16">' + ic('lock', 12, 2, ' style="vertical-align:-1px"') + ' Jméno, datum narození ani adresu nikdy nezveřejňujeme. Použijeme je jen do vašeho trestního oznámení a na žádost policie.</p>' +
+        '<div class="row between gap-16 mt-32"><span></span><button type="button" class="btn lg" data-act="verify">Ověřit</button></div>';
+    }
+    if (step === 'profil') {
+      var pr = u.profile || {};
+      body =
+        '<h1 class="h-l mt-32">Dokončete profil</h1>' +
+        '<p class="lead" style="margin-top:12px">Údaje z ověření už máme. Zbývá telefon a souhlas.</p>' +
+        '<dl class="dl mt-32">' +
+        '<div><dt>Jméno</dt><dd>' + esc(pr.name) + '</dd></div><div><dt>Datum narození</dt><dd>' + esc(pr.birth) + '</dd></div><div><dt>Adresa</dt><dd>' + esc(pr.address) + '</dd></div></dl>' +
+        '<span class="row gap-8 xs mt-8" style="color:var(--found)">' + ic('shield', 14, 2) + 'Ověřeno přes ' + esc(METHOD[u.method] || '') + ' · nelze měnit</span>' +
+        '<form class="stack gap-32 mt-32" data-form="profile">' +
+        '<div class="field"><label for="r-phone">Telefon</label><input id="r-phone" class="u-input" type="tel" inputmode="tel" autocomplete="tel" required value="' + esc(pr.phone || '') + '" placeholder="+420 …"><span class="xs muted">Jen pro případ, že vás potřebuje kontaktovat policie. Nezveřejňuje se.</span></div>' +
+        '<label class="row gap-12 small" style="align-items:flex-start;cursor:pointer"><input type="checkbox" id="r-terms" required style="width:20px;height:20px;margin:0;flex:none;accent-color:#0A0A0A"' + (u.terms ? ' checked' : '') + '><span>Souhlasím s <a href="#/o-prototypu">podmínkami</a> a beru na vědomí, že vědomě nepravdivé hlášení může být trestné.</span></label>' +
+        '<div class="row between gap-16"><span></span><button type="submit" class="btn lg">Dokončit</button></div></form>';
+    }
+
+    return {
+      html: '<div class="wrap page"><div class="narrow">' + head + body + '</div></div>',
+      title: 'Registrace', noTabbar: true, nav: 'ucet',
+      after: function () {
+        var fe = app.querySelector('[data-form="email"]');
+        if (fe) fe.addEventListener('submit', function (e) {
+          e.preventDefault();
+          reg.email = app.querySelector('#r-email').value.trim(); save();
+          toast('Kód odeslán (v prototypu naoko).');
+          go('#/registrace/kod' + qs);
+        });
+        var fc = app.querySelector('[data-form="code"]');
+        if (fc) fc.addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!store.user || store.user.email !== reg.email) store.user = { email: reg.email, verified: false, profile: {} };
+          save();
+          go(store.user.verified ? '#/registrace/profil' + qs : '#/registrace/overeni' + qs);
+        });
+        app.querySelectorAll('[data-method]').forEach(function (b) { b.addEventListener('click', function () { reg.method = b.dataset.method; save(); render(); }); });
+        var vb = app.querySelector('[data-act="verify"]');
+        if (vb) vb.addEventListener('click', function () {
+          var m = reg.method || 'bankid';
+          function done() {
+            store.user.verified = true; store.user.method = m;
+            store.user.profile = Object.assign({}, store.user.profile, { name: 'Jan Novák', birth: '1. 1. 1980', address: 'Ukázková 12, 120 00 Praha 2' });
+            save(); toast('Totožnost ověřena.'); go('#/registrace/profil' + qs);
+          }
+          if (m === 'doklad') {
+            addPhoto(function () {
+              toast('Teď selfie.');
+              setTimeout(function () { addPhoto(function () { done(); }, 'Selfie'); }, 600);
+            }, 'Přední strana občanky');
+            return;
+          }
+          var close = sheet('<div class="stack gap-16" style="align-items:center;text-align:center;padding:12px 0"><span class="icon-btn" style="width:56px;height:56px">' + ic('shield', 26, 1.8) + '</span>' +
+            '<b style="font-size:18px;font-weight:600">' + (m === 'bankid' ? 'Přesměrováváme do vaší banky…' : 'Přesměrováváme na Identitu občana…') + '</b>' +
+            '<span class="small muted">V prototypu se ověření jen naoko simuluje.</span></div>');
+          setTimeout(function () { close(); done(); }, 1600);
+        });
+        var fp = app.querySelector('[data-form="profile"]');
+        if (fp) fp.addEventListener('submit', function (e) {
+          e.preventDefault();
+          store.user.profile.phone = app.querySelector('#r-phone').value.trim();
+          store.user.terms = app.querySelector('#r-terms').checked;
+          save(); toast('Hotovo – máte ověřený účet.');
+          go(dalsi ? '#/' + dalsi : '#/ucet');
+        });
+      }
+    };
+  };
+
   /* ---------- Účet ---------- */
   VIEWS.ucet = function () {
     var mine = store.userRecords;
@@ -1028,6 +1155,12 @@
     var html =
       '<div class="wrap page"><div class="narrow stack gap-32">' +
       '<h1 class="h-l">Účet</h1>' +
+      (store.user && store.user.verified
+        ? '<section class="card soft" style="padding:20px;gap:12px"><div class="row gap-12"><span class="icon-btn dark" style="width:48px;height:48px;font-weight:600">' + esc(initials(store.user.profile.name)) + '</span><div class="stack"><b style="font-weight:600">' + esc(store.user.profile.name || '') + '</b><span class="small muted">' + esc(store.user.email) + '</span></div></div>' +
+          '<span class="row gap-8 small" style="color:var(--found)">' + ic('shield', 16) + 'Ověřeno · ' + esc(METHOD[store.user.method] || '') + '</span>' +
+          (userReady() ? '' : '<a href="#/registrace/profil" class="btn sm" style="align-self:flex-start">Dokončit profil</a>') +
+          '<button type="button" class="link-btn" style="align-self:flex-start;padding:0" data-act="logout">Odhlásit</button></section>'
+        : '<section class="card" style="padding:20px;gap:12px"><b style="font-weight:600">Nejste přihlášeni</b><span class="small muted">Hledat a ověřovat můžete bez účtu. Pro vložení předmětu je potřeba ověřený účet.</span><a href="#/registrace" class="btn" style="align-self:flex-start">Přihlásit / registrovat</a></section>') +
       '<section class="stack gap-12"><h2 style="font-size:15px;letter-spacing:0">Moje hlášení</h2>' +
       (mine.length ? mine.map(miniRow).join('') : '<div class="note">Zatím jste nic nenahlásili. <a href="#/nahlasit">Nahlásit ztrátu nebo krádež</a></div>') + '</section>' +
       '<section class="stack gap-12"><h2 style="font-size:15px;letter-spacing:0">Hlídám</h2>' +
@@ -1037,8 +1170,15 @@
       '<a href="#/firmy" class="row between" style="padding:14px 0;border-top:1px solid var(--line);text-decoration:none"><span>Pro bazary, aukce a policii</span>' + ic('chevron', 18) + '</a>' +
       '<a href="#/o-prototypu" class="row between" style="padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none"><span>O prototypu</span>' + ic('chevron', 18) + '</a>' +
       '</section></div></div>';
-    return { html: html, title: 'Účet' };
+    return {
+      html: html, title: 'Účet',
+      after: function () {
+        var lo = app.querySelector('[data-act="logout"]');
+        if (lo) lo.addEventListener('click', function () { store.user = null; save(); toast('Odhlášeno.'); render(); });
+      }
+    };
   };
+  function initials(name) { return String(name || '?').split(/\s+/).map(function (x) { return x.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
   function miniRow(r) {
     return '<a href="#/zaznam/' + esc(r.id) + '" class="row gap-16" style="padding:8px 0;text-decoration:none"><div style="width:56px;flex:none">' + thumb(r, 'border-radius:12px') + '</div>' +
       '<div class="stack" style="flex:1;min-width:0"><b style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.title) + '</b>' + statusHtml(r, r.police ? 'nahlášeno policii' : (store.watches.indexOf(r.id) >= 0 ? 'hlídáme' : '')) + '</div>' + ic('chevron', 18) + '</a>';
@@ -1283,6 +1423,7 @@
       '<li>Záznamy, zprávy a kontroly jsou smyšlené. Co přidáte, uloží se jen do tohoto prohlížeče.</li>' +
       '<li>Hledání podle fotky výsledek jen simuluje. Sériová čísla se porovnávají opravdu (zkuste WTU0458812).</li>' +
       '<li>Skener kódu po chvíli „načte“ ukázkový kód. Fotoaparát je skutečný, pokud ho povolíte.</li>' +
+      '<li>Registrace a ověření totožnosti (bankovní identita, Identita občana, doklad) jsou simulované – kód z e-mailu je libovolných 6 číslic.</li>' +
       '<li>Zprávy nikomu neodcházejí, výpisy ani oznámení nemají právní váhu.</li>' +
       '<li>Napojení na policejní evidenci a Interpol je v návrhu jako cílový stav.</li></ul></div>' +
       '<div class="stack gap-8"><b style="font-weight:600">Vyzkoušejte</b>' +
