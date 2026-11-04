@@ -1090,7 +1090,7 @@
         '<p class="lead" style="margin-top:12px">Údaje z ověření už máme. Zbývá telefon a souhlas.</p>' +
         '<dl class="dl mt-32">' +
         '<div><dt>Jméno</dt><dd>' + esc(pr.name) + '</dd></div><div><dt>Datum narození</dt><dd>' + esc(pr.birth) + '</dd></div><div><dt>Adresa</dt><dd>' + esc(pr.address) + '</dd></div></dl>' +
-        '<span class="row gap-8 xs mt-8" style="color:var(--found)">' + ic('shield', 14, 2) + 'Ověřeno přes ' + esc(METHOD[u.method] || '') + ' · nelze měnit</span>' +
+        '<span class="row gap-8 xs mt-8" style="color:var(--found)">' + ic('shield', 14, 2) + 'Ověřeno přes ' + esc({ bankid: 'Bankovní identitu', nia: 'Identitu občana', doklad: 'doklad a selfie' }[u.method] || '') + ' · nelze měnit</span>' +
         '<form class="stack gap-32 mt-32" data-form="profile">' +
         '<div class="field"><label for="r-phone">Telefon</label><input id="r-phone" class="u-input" type="tel" inputmode="tel" autocomplete="tel" required value="' + esc(pr.phone || '') + '" placeholder="+420 …"><span class="xs muted">Jen pro případ, že vás potřebuje kontaktovat policie. Nezveřejňuje se.</span></div>' +
         '<label class="row gap-12 small" style="align-items:flex-start;cursor:pointer"><input type="checkbox" id="r-terms" required style="width:20px;height:20px;margin:0;flex:none;accent-color:#0A0A0A"' + (u.terms ? ' checked' : '') + '><span>Souhlasím s <a href="#/o-prototypu">podmínkami</a> a beru na vědomí, že vědomě nepravdivé hlášení může být trestné.</span></label>' +
