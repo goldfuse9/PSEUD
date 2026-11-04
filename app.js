@@ -1,10 +1,10 @@
-/* PSEUD – klikací prototyp. Bez serveru: data jsou v data.js a v localStorage. */
+/* ZOVE – klikací prototyp. Bez serveru: data jsou v data.js a v localStorage. */
 (function () {
   'use strict';
 
-  var D = window.PSEUD_DATA;
+  var D = window.ZOVE_DATA;
   var app = document.getElementById('app');
-  var KEY = 'pseud-proto-v1';
+  var KEY = 'zove-proto-v1';
 
   /* ------------------------------------------------------------------ */
   /* Store                                                              */
@@ -282,7 +282,7 @@
     var out = view(p.slice(1), r.query) || {};
     if (typeof out === 'string') out = { html: out };
     app.innerHTML = out.html || '';
-    document.title = (out.title ? out.title + ' · ' : '') + 'PSEUD';
+    document.title = (out.title ? out.title + ' · ' : '') + 'ZOVE';
     document.body.classList.toggle('no-tabbar', !!out.noTabbar);
 
     var pathKey = p.join('/');
@@ -472,7 +472,7 @@
         ? '<a class="btn lg block" href="#/videl/' + esc(r.id) + '?vlastnik=1">To je moje – ozvat se nálezci</a>'
         : '<a class="btn lg block" href="#/videl/' + esc(r.id) + '">' + ic('eye', 18) + 'Viděl/a jsem to</a>') +
         '<div class="row gap-8"><button type="button" class="btn ghost" style="flex:1" data-act="watch" aria-pressed="' + watching + '">' + ic('bell', 18, 1.8, watching ? ' style="fill:currentColor"' : '') + (watching ? 'Hlídám' : 'Hlídat podobné') + '</button><button type="button" class="btn ghost" style="flex:1" data-act="share">' + ic('share', 18) + 'Sdílet</button></div>' +
-        '<span class="xs muted">Zpráva jde přes PSEUD, kontakty zůstávají skryté.</span>';
+        '<span class="xs muted">Zpráva jde přes ZOVE, kontakty zůstávají skryté.</span>';
 
     var html =
       '<div class="wrap page">' +
@@ -609,7 +609,7 @@
         '<h1 class="h-l mt-32">Kam vám dát vědět?</h1>' +
         '<div class="stack gap-32 mt-32">' +
         '<div class="field"><label for="f-email">E-mail</label><input id="f-email" class="u-input" type="email" inputmode="email" value="' + esc(d.email) + '" placeholder="vas@email.cz" autocomplete="email">' +
-        '<span class="xs muted">' + ic('lock', 13, 2, ' style="vertical-align:-2px"') + ' Nezveřejníme ho. Zprávy od nálezců vám přepošleme, odpovídáte přes PSEUD.</span></div>' +
+        '<span class="xs muted">' + ic('lock', 13, 2, ' style="vertical-align:-2px"') + ' Nezveřejníme ho. Zprávy od nálezců vám přepošleme, odpovídáte přes ZOVE.</span></div>' +
         '<div class="stack gap-12"><span class="xs muted" style="text-transform:uppercase;letter-spacing:.06em">Takhle to uvidí ostatní</span>' +
         '<div class="row gap-16" style="padding:12px;border-radius:18px;background:var(--soft-2)"><div style="width:88px;flex:none">' + thumb(preview, 'border-radius:12px') + '</div>' +
         '<div class="stack gap-4">' + statusHtml(preview, 'dnes') + '<b style="font-weight:500">' + esc(d.title) + '</b><span class="small muted">' + esc(d.place) + '</span></div></div></div>' +
@@ -690,7 +690,7 @@
       '<p class="lead" style="margin:0">Hlídáme nové záznamy, nálezy i kontroly z bazarů. Když se objeví něco podobného, dáme vám vědět.</p>' +
       '<a href="#/zaznam/' + esc(r.id) + '" class="row gap-16" style="padding:12px;border-radius:18px;background:var(--soft-2);text-decoration:none"><div style="width:72px;flex:none">' + thumb(r, 'border-radius:12px') + '</div><div class="stack gap-4">' + statusHtml(r, 'dnes') + '<b style="font-weight:500">' + esc(r.title) + '</b><span class="small muted">Zobrazit záznam →</span></div></a>' +
       (r.status === 'stolen' ? '<a href="#/oznameni/' + esc(r.id) + '" class="card dark" style="padding:24px"><span class="h-s">Připravte trestní oznámení</span><span class="muted small">Většinu máme vyplněnou. Zbývají tři otázky a výběr, jak ho podáte.</span><span style="font-weight:500;margin-top:6px">Pokračovat →</span></a>' : '') +
-      (isMobile() && !isStandalone() ? '<a href="#/instalace" class="card" style="padding:20px"><span style="font-weight:600">Chcete upozornění do telefonu?</span><span class="small muted">Přidejte si PSEUD na plochu.</span></a>' : '') +
+      (isMobile() && !isStandalone() ? '<a href="#/instalace" class="card" style="padding:20px"><span style="font-weight:600">Chcete upozornění do telefonu?</span><span class="small muted">Přidejte si ZOVE na plochu.</span></a>' : '') +
       '<a href="#/" class="btn ghost lg">Hotovo</a>' +
       '</div></div>';
     return { html: html, title: 'Zveřejněno' };
@@ -702,7 +702,7 @@
     if (!r) return VIEWS.__404();
     var owner = !!q.vlastnik;
     var st = VIEWS.videl.state || (VIEWS.videl.state = {});
-    if (st.id !== r.id) { st.id = r.id; st.where = 'Inzerát'; st.reply = 'pseud'; st.sent = false; st.photo = null; }
+    if (st.id !== r.id) { st.id = r.id; st.where = 'Inzerát'; st.reply = 'zove'; st.sent = false; st.photo = null; }
     var places = {
       'Inzerát': ['Odkaz na inzerát', 'https://…'],
       'Bazar nebo zastavárna': ['Název a adresa', 'např. zastavárna na Vinohradské'],
@@ -729,7 +729,7 @@
         '<div class="row gap-12">' + (st.photo ? '<div class="photo" style="width:64px;height:64px"><img src="' + st.photo + '" alt="Přiložená fotka"></div>' : '') +
         '<button type="button" class="btn ghost sm" data-act="photo">' + ic('camera', 16) + (st.photo ? 'Vyměnit fotku' : 'Přiložit fotku nebo snímek inzerátu') + '</button></div>' +
         '<fieldset style="border:0;margin:0;padding:0" class="stack gap-8"><legend class="small muted" style="padding:0;margin-bottom:8px">Jak se vám majitel může ozvat</legend>' +
-        '<button type="button" class="radio-row" data-reply="pseud" aria-pressed="' + (st.reply === 'pseud') + '"><span><b>Přes PSEUD</b><span class="s">Anonymní konverzace, e-mail zůstane skrytý</span></span><span class="r"></span></button>' +
+        '<button type="button" class="radio-row" data-reply="zove" aria-pressed="' + (st.reply === 'zove') + '"><span><b>Přes ZOVE</b><span class="s">Anonymní konverzace, e-mail zůstane skrytý</span></span><span class="r"></span></button>' +
         '<button type="button" class="radio-row" data-reply="once" aria-pressed="' + (st.reply === 'once') + '"><span><b>Jen jednorázově</b><span class="s">Pošlu informaci a nechci odpověď</span></span><span class="r"></span></button>' +
         '</fieldset>' +
         '<div class="row between gap-16"><span class="xs muted">Váš e-mail majitel neuvidí.</span><button type="submit" class="btn lg">Odeslat</button></div></form>';
@@ -856,13 +856,13 @@
       '<div class="row between wrap-row gap-12 no-print"><a href="javascript:history.back()" class="small muted" style="text-decoration:none">← Zpět</a>' +
       '<div class="row gap-8"><button type="button" class="btn ghost sm" data-act="share">' + ic('share', 16) + 'Sdílet</button><button type="button" class="btn sm" data-act="print">Tisk / PDF</button></div></div>' +
       '<article class="doc mt-24" style="font-family:Geist,system-ui,sans-serif">' +
-      '<div class="row between" style="align-items:flex-start"><span class="logo" style="font-size:18px"><span class="logo-dot"></span>pseud</span><span class="mono xs muted" style="text-align:right">č. ' + esc(c.id) + '<br>' + fmtDateTime(c.at) + '</span></div>' +
+      '<div class="row between" style="align-items:flex-start"><span class="logo" style="font-size:18px"><span class="logo-dot"></span>zove</span><span class="mono xs muted" style="text-align:right">č. ' + esc(c.id) + '<br>' + fmtDateTime(c.at) + '</span></div>' +
       '<h1 class="h-m" style="margin-top:32px;font-family:Geist,system-ui,sans-serif">Ověřovací výpis</h1>' +
       '<p class="muted">Výpis dokládá, že předmět byl v uvedený čas prověřen proti databázi ztracených a odcizených věcí.</p>' +
       '<dl class="dl" style="margin-top:24px"><div><dt>Způsob ověření</dt><dd>' + ({ kod: 'sériové číslo', foto: 'fotografie', odkaz: 'odkaz na inzerát' }[c.mode] || '') + '</dd></div>' +
       '<div><dt>Dotaz</dt><dd class="mono">' + esc(c.query || '—') + '</dd></div>' +
       '<div><dt>Výsledek</dt><dd style="font-weight:600;color:' + (c.result === 'match' ? 'var(--stolen)' : 'var(--found)') + '">' + (c.result === 'match' ? 'možná shoda – záznam ' + esc(rec ? rec.id : '') : 'bez shody') + '</dd></div></dl>' +
-      '<p class="xs muted" style="margin-top:24px">Žádná databáze není úplná a čistý výsledek není zárukou původu věci. Pravost výpisu ověříte na adrese pseud.cz/v/' + esc(c.id) + '. Prototyp – výpis nemá právní váhu.</p>' +
+      '<p class="xs muted" style="margin-top:24px">Žádná databáze není úplná a čistý výsledek není zárukou původu věci. Pravost výpisu ověříte na adrese zove.cz/v/' + esc(c.id) + '. Prototyp – výpis nemá právní váhu.</p>' +
       '</article></div></div>';
     return {
       html: html, title: 'Výpis ' + c.id,
@@ -936,7 +936,7 @@
       '<aside class="side-col stack gap-16" style="flex:1 1 460px">' +
       '<div class="row between wrap-row gap-8 no-print"><span class="xs muted">Náhled dokumentu · průběžně se doplňuje</span><div class="row gap-8"><button type="button" class="btn ghost sm" data-act="edit">' + (c.edited !== null ? 'Hotovo' : 'Upravit text') + '</button><button type="button" class="btn sm" data-act="print">Stáhnout PDF</button></div></div>' +
       '<article class="doc" id="doc"' + (c.editing ? ' contenteditable="true"' : '') + '>' + (c.edited !== null ? c.edited : docHtml()) + '</article>' +
-      '<p class="xs muted no-print" style="margin:0">PSEUD není právní služba. Text je návrh, před podáním si ho přečtěte. Žlutá místa doplníte vy.</p>' +
+      '<p class="xs muted no-print" style="margin:0">ZOVE není právní služba. Text je návrh, před podáním si ho přečtěte. Žlutá místa doplníte vy.</p>' +
       (isMine(r) ? '<div class="row gap-12 no-print" style="padding:16px 18px;border:1px solid var(--line);border-radius:16px"><span class="small" style="flex:1;color:var(--ink-2)">' + (r.caseNo ? 'Číslo jednací: <b class="mono">' + esc(r.caseNo) + '</b>' : 'Po podání doplňte číslo jednací a záznam dostane štítek „Nahlášeno policii“.') + '</span><button type="button" class="btn ghost sm" data-act="caseno">' + (r.caseNo ? 'Změnit' : 'Doplnit') + '</button></div>' : '') +
       '</aside></div></div>';
 
@@ -989,7 +989,7 @@
         (m.thread || []).map(function (t) { return '<div style="align-self:flex-end;max-width:85%;padding:12px 16px;border-radius:18px 18px 6px 18px;background:var(--ink);color:#fff">' + esc(t) + '</div>'; }).join('') +
         '</div>' +
         '<form class="pill-search mt-32" data-form="reply" style="box-shadow:none"><label for="reply" class="sr">Odpověď</label><input id="reply" placeholder="Napsat odpověď…" autocomplete="off"><button type="submit" class="icon-btn dark" aria-label="Odeslat">' + ic('arrow', 18, 2) + '</button></form>' +
-        '<p class="xs muted" style="margin:10px 0 0 22px">' + ic('lock', 12, 2, ' style="vertical-align:-1px"') + ' Odpovídáte přes PSEUD. Váš e-mail zůstane skrytý.</p>' +
+        '<p class="xs muted" style="margin:10px 0 0 22px">' + ic('lock', 12, 2, ' style="vertical-align:-1px"') + ' Odpovídáte přes ZOVE. Váš e-mail zůstane skrytý.</p>' +
         '</div></div>';
       return {
         html: html, title: 'Zpráva',
@@ -1000,7 +1000,7 @@
             var v = f.querySelector('input').value.trim();
             if (!v) return;
             (m.thread = m.thread || []).push(v); save(); render();
-            toast('Odesláno přes PSEUD.');
+            toast('Odesláno přes ZOVE.');
           });
         }
       };
@@ -1047,13 +1047,13 @@
   /* ---------- Instalace (PWA) ---------- */
   var deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; });
-  window.addEventListener('appinstalled', function () { deferredPrompt = null; toast('PSEUD je na ploše.'); });
+  window.addEventListener('appinstalled', function () { deferredPrompt = null; toast('ZOVE je na ploše.'); });
   function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 
   function installNudge() {
     sheet('<div class="row gap-16"><span style="flex:none;width:56px;height:56px;border-radius:14px;background:var(--ink);display:flex;align-items:center;justify-content:center"><span class="logo-dot" style="background:#fff"></span></span>' +
-      '<div class="stack gap-4"><b style="font-size:18px;font-weight:600">Upozornění do telefonu?</b><span class="small muted">Přidejte si PSEUD na plochu a dáme vám vědět hned.</span></div></div>' +
+      '<div class="stack gap-4"><b style="font-size:18px;font-weight:600">Upozornění do telefonu?</b><span class="small muted">Přidejte si ZOVE na plochu a dáme vám vědět hned.</span></div></div>' +
       '<a href="#/instalace" class="btn lg" data-close>Jak na to</a><button type="button" class="link-btn" data-close style="align-self:center">Teď ne</button>');
   }
 
@@ -1062,8 +1062,8 @@
     var perm = ('Notification' in window) ? Notification.permission : 'unsupported';
     var html =
       '<div class="wrap page"><div class="narrow stack gap-24">' +
-      '<div class="row gap-16"><span style="flex:none;width:72px;height:72px;border-radius:18px;background:var(--ink);display:flex;align-items:center;justify-content:center;gap:4px;color:#fff;font-weight:700;font-size:15px"><span class="logo-dot" style="background:#fff;width:7px;height:7px"></span>pseud</span>' +
-      '<div class="stack gap-4"><h1 class="h-m">' + (isStandalone() ? 'PSEUD máte na ploše' : 'Přidejte si PSEUD na plochu') + '</h1><span class="small muted">Zdarma, bez obchodu s aplikacemi</span></div></div>' +
+      '<div class="row gap-16"><span style="flex:none;width:72px;height:72px;border-radius:18px;background:var(--ink);display:flex;align-items:center;justify-content:center;gap:4px;color:#fff;font-weight:700;font-size:15px"><span class="logo-dot" style="background:#fff;width:7px;height:7px"></span>zove</span>' +
+      '<div class="stack gap-4"><h1 class="h-m">' + (isStandalone() ? 'ZOVE máte na ploše' : 'Přidejte si ZOVE na plochu') + '</h1><span class="small muted">Zdarma, bez obchodu s aplikacemi</span></div></div>' +
       '<ul style="margin:0;padding:0;list-style:none" class="stack gap-16">' +
       [['bell', 'Upozorníme vás, když se objeví podobná věc'], ['camera', 'Fotoaparát a skener na jedno klepnutí'], ['wifi', 'Část aplikace funguje i bez signálu']].map(function (x) { return '<li class="row gap-12" style="align-items:flex-start">' + ic(x[0], 20, 1.8, ' style="flex:none;margin-top:2px"') + '<span>' + x[1] + '</span></li>'; }).join('') + '</ul>' +
       (isStandalone() ? '' :

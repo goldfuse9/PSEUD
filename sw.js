@@ -1,5 +1,5 @@
-/* PSEUD prototyp – service worker: aplikace funguje i offline. */
-var VERSION = 'pseud-proto-1';
+/* ZOVE prototyp – service worker: aplikace funguje i offline. */
+var VERSION = 'zove-proto-2';
 var SHELL = [
   './',
   './index.html',

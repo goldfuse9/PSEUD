@@ -1,4 +1,6 @@
-# PSEUD – klikací prototyp
+# ZOVE – klikací prototyp
+
+**ZOVE** = **Z**tracené a **O**dcizené **VĚ**ci.
 
 Veřejná databáze ztracených a odcizených věcí. Statický prototyp bez serveru: HTML, CSS a JavaScript, ukázková data v `data.js`, vše, co uživatel přidá, se ukládá jen do jeho prohlížeče (localStorage).
 

@@ -1,5 +1,5 @@
 /* Ukázková data prototypu. Vše je smyšlené. */
-window.PSEUD_DATA = {
+window.ZOVE_DATA = {
   categories: [
     { id: 'umeni', label: 'Umění' },
     { id: 'kola', label: 'Kola' },
