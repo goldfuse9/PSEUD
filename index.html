@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PSEUD – ztracené a odcizené věci</title>
+<meta name="description" content="Prototyp veřejné databáze ztracených a odcizených věcí.">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PSEUD">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Source+Serif+4:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="proto-bar no-print">Prototyp – všechna data jsou smyšlená a nic se nikam neodesílá. <button type="button" class="link-btn" id="reset-demo" style="color:#fff;padding:0 0 0 6px;font-size:13px">Obnovit ukázku</button></div>
+
+<header class="site-header" id="site-header">
+  <div class="wrap header-inner">
+    <a href="#/" class="logo"><span class="logo-dot"></span>pseud</a>
+    <nav class="nav desktop-only" aria-label="Hlavní">
+      <a href="#/hledat" data-nav="hledat">Hledat</a>
+      <a href="#/overit" data-nav="overit">Ověřit před koupí</a>
+      <a href="#/oznameni" data-nav="oznameni">Trestní oznámení</a>
+      <a href="#/zpravy" data-nav="zpravy">Zprávy</a>
+      <a href="#/nahlasit" class="btn sm">Nahlásit</a>
+    </nav>
+    <a href="#/instalace" class="icon-btn mobile-only" aria-label="Instalace a upozornění">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/></svg>
+    </a>
+  </div>
+</header>
+
+<main id="app" tabindex="-1"></main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>PSEUD nenahrazuje oznámení na Policii ČR. Krádež nahlaste vždy i tam.</span>
+    <nav aria-label="Patička">
+      <a href="#/firmy">Pro bazary, aukce a policii</a>
+      <a href="#/instalace">Aplikace do telefonu</a>
+      <a href="#/o-prototypu">O prototypu</a>
+    </nav>
+  </div>
+</footer>
+
+<nav class="tabbar" id="tabbar" aria-label="Aplikace">
+  <a href="#/" data-tab="home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM21 21l-4.3-4.3"/></svg>Hledat</a>
+  <a href="#/overit" data-tab="overit"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M12 9v6M16 9v6"/></svg>Ověřit</a>
+  <a href="#/nahlasit" data-tab="nahlasit" class="plus" aria-label="Nahlásit"><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span></a>
+  <a href="#/zpravy" data-tab="zpravy"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>Zprávy<i class="badge-dot" id="msg-dot" hidden></i></a>
+  <a href="#/ucet" data-tab="ucet"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0"/></svg>Účet</a>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="file-pick" accept="image/*" hidden>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
